@@ -22,6 +22,8 @@
 		<RepositoryUrl>https://github.com/LostBeard/SpawnDev.GenericInvocation.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>Reflection;Generics;MethodInvoker;Expression-Trees</PackageTags>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
