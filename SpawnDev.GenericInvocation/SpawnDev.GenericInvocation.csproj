@@ -4,8 +4,6 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
-		<!-- NuGet Packing Details -->
 		<Version>1.0.0</Version>
 		<PackageReleaseNotes>v1.0.0</PackageReleaseNotes>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -14,7 +12,7 @@
 		<DebugType>Embedded</DebugType>
 		<Title>SpawnDev.GenericInvocation</Title>
 		<Authors>LostBeard</Authors>
-		<Description>A ultra-high-performance, zero-allocation reflection utility for **.NET 8, 9, and 10** that bridges the gap between runtime `Type` variables and compile-time generic (`T`) method signatures.</Description>
+		<Description>A high-performance reflection utility for **.NET 8, 9, and 10** that bridges the gap between runtime `Type` variables and compile-time generic (`T`) method signatures.</Description>
 		<PackageProjectUrl>https://github.com/LostBeard/SpawnDev.GenericInvocation</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>

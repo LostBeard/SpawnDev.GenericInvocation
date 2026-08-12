@@ -1,9 +1,8 @@
 # SpawnDev.GenericInvocation
 
-[![NuGet Version](https://shields.io)](https://nuget.org)
-[![License](https://shields.io)](LICENSE)
 
-A ultra-high-performance, zero-allocation reflection utility for **.NET 8, 9, and 10** that bridges the gap between runtime `Type` variables and compile-time generic (`<T>`) method signatures. 
+
+A high-performance reflection utility for **.NET 8, 9, and 10** that bridges the gap between runtime `Type` variables and compile-time generic (`<T>`) method signatures.
 
 By utilizing **one-time compiled Expression Trees** and **cached non-boxing generic bridges**, `SpawnDev.GenericInvocation` completely avoids the heavy runtime performance penalties of `MethodInfo.Invoke` and the memory churn of the C# `dynamic` keyword call-site binder.
 
