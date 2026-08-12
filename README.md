@@ -32,7 +32,7 @@ async ValueTask<T> WriteTypedValue<T>() { ... }
 
 | Implementation Strategy | Cost Per Call | Total Elapsed Time |
 | :--- | :--- | :--- |
-| Hardcoded Direct Native Call *(Baseline Limit)* | **~0.44 μs** | 4,472,600 μs |
+| Hardcoded Direct Native Call *(Baseline Limit)* | **~0.44 μs** | 4,472,60 μs |
 | **SpawnDev.GenericInvocation** | **~2.41 μs** | **2,414,099 μs** |
 | Dynamic Keyword (`dynamic`) Unwrapping | ~4.36 μs | 4,418,700 μs |
 
