@@ -78,7 +78,7 @@ object? result = await myDelegate.InvokeGenericAsync(typeof(int));
 
 ## ⚙️ Features Under the Hood
 
-* **Zero Array Heap Allocations**: Leverages .NET 10 `Span<object?>` parameter layouts combined with conditional key-cloning to ensure that checking cache dictionaries is entirely garbage-collection silent.
+* **Zero Array Heap Allocations**: Leverages `Span<object?>` parameter layouts combined with conditional key-cloning to ensure that checking cache dictionaries is entirely garbage-collection silent.
 * **Auto-Target Resolution**: Native support for instance methods, static methods, and complex captured local functions alike without triggering delegate targeting binding failures (`Arg_DlgtTargMeth`).
 * **Built for the Future**: Designed specifically with lightweight runtime features optimized for high-throughput UI wrappers, framework components, and Blazor WebAssembly environments.
 
