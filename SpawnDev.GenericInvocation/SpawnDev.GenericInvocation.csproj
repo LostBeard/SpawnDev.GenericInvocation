@@ -10,8 +10,8 @@
 		     actionable warning at each consumer call site instead of an opaque IL20xx deep inside us. -->
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
-		<Version>1.0.0</Version>
-		<PackageReleaseNotes>v1.0.0</PackageReleaseNotes>
+		<Version>1.0.1</Version>
+		<PackageReleaseNotes>v1.0.1 - Trimming support</PackageReleaseNotes>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<EmbedAllSources>true</EmbedAllSources>
