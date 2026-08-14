@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -6,7 +7,7 @@ namespace SpawnDev.GenericInvocation
 {
     /// <summary>
     /// The machinery behind the "runtime Type -> compile-time &lt;T&gt;" trick the marshaller pipeline relies
-    /// on. Given a generic method group and a runtime <see cref="Type"/>, <see cref="InvokeGeneric(Delegate, Type)"/>
+    /// on. Given a generic method group and a runtime <see cref="Type"/>, <see cref="InvokeGeneric(Delegate, Type, object?[])"/>
     /// closes the method over that type and invokes it - so a value whose type is only known at runtime can
     /// still be dispatched into a strongly-typed generic method (e.g. <c>writeTyped&lt;T1&gt;</c>) without
     /// boxing. Closed <see cref="MethodInfo"/>s are cached (single- and multi-type keys) so the expensive
@@ -17,9 +18,21 @@ namespace SpawnDev.GenericInvocation
     {
         // Cache our specialized, non-boxing executor engines instead of MethodInvokers
         private static readonly ConcurrentDictionary<CacheKeySingle, IGenericExecutor> _executorSingleCache = new();
+        // A general-purpose "runtime Type -> compile-time <T>" invoker cannot know the trim/AOT
+        // requirements of the caller-supplied generic method: its type parameter might need
+        // PublicConstructors, PublicMethods, or nothing. That requirement is not expressible as a single
+        // annotation, so the honest contract is to require the CALLER to guarantee it - which is exactly
+        // what [RequiresUnreferencedCode]/[RequiresDynamicCode] propagate to the call site.
+        private const string RucMessage =
+            "Closes a caller-supplied generic method over a runtime Type using reflection (MakeGenericMethod/MakeGenericType). The trimmer cannot guarantee the target method's type-argument member requirements or the passed runtime types survive trimming. Ensure the target generic method and every Type passed are preserved (e.g. via DynamicDependency, DynamicallyAccessedMembers at the call site, or a trimmer descriptor).";
+        private const string RdcMessage =
+            "Uses MethodInfo.MakeGenericMethod/Type.MakeGenericType and compiled Expression Trees, which require runtime code generation and are not supported under Native AOT.";
+
         /// <summary>
         /// Invoke a generic method using Type
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         public static Task<object?> InvokeGenericAsync(this Delegate methodGroup, Type targetType, object?[]? args = null)
         {
             var key = new CacheKeySingle(methodGroup.Method, targetType);
@@ -35,6 +48,8 @@ namespace SpawnDev.GenericInvocation
         /// <summary>
         /// Invoke a generic method using Type[]
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         public static async Task<object?> InvokeGenericAsync(this Delegate methodGroup, Type[] targetTypes, params object?[]? args)
         {
             var key = new CacheKey(methodGroup.Method, targetTypes);
@@ -65,6 +80,8 @@ namespace SpawnDev.GenericInvocation
         /// <summary>
         /// Invoke a generic method using Type
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         public static object? InvokeGeneric(this Delegate methodGroup, Type targetType, params object?[]? args)
         {
             var key = new CacheKeySingle(methodGroup.Method, targetType);
@@ -84,6 +101,8 @@ namespace SpawnDev.GenericInvocation
         /// <summary>
         /// Invoke a generic method using Type[]
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         public static object? InvokeGeneric(this Delegate methodGroup, Type[] targetTypes, params object?[]? args)
         {
             var key = new CacheKey(methodGroup.Method, targetTypes);
@@ -166,6 +185,8 @@ namespace SpawnDev.GenericInvocation
         /// Highly optimized result extraction. Bypasses 'dynamic' entirely by using
         /// compiled expression trees cached per exact runtime Type.
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         private static Task<object?> GetResultFromUnknownObjectAsync(object? obj)
         {
             if (obj is null) return Task.FromResult<object?>(null);
@@ -177,6 +198,8 @@ namespace SpawnDev.GenericInvocation
         /// <summary>
         /// Generates a strongly-typed compiled expression tree tailored to unwrap the given type.
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         private static Func<object, Task<object?>> CreateUnwrapperDelegate(Type type)
         {
             // --- Standard void Task ---
@@ -251,6 +274,8 @@ namespace SpawnDev.GenericInvocation
         /// Compiles a runtime lambda expression to handle custom duck-typed awaitables 
         /// without relying on the 'dynamic' binder engine.
         /// </summary>
+        [RequiresUnreferencedCode(RucMessage)]
+        [RequiresDynamicCode(RdcMessage)]
         private static Func<object, Task<object?>> CreateCustomAwaitableDelegate(Type type, MethodInfo getAwaiter, MethodInfo getResult)
         {
             // If the custom awaiter returns void, return null upon completion
@@ -291,6 +316,8 @@ namespace SpawnDev.GenericInvocation
         {
             private readonly Func<object?, object?[], Task<object?>> _compiledExecutor;
 
+            [RequiresUnreferencedCode(RucMessage)]
+            [RequiresDynamicCode(RdcMessage)]
             public GenericExecutorBridge(MethodInfo openMethod)
             {
                 // 1. Resolve the exact closed generic method blueprint for this target type <T>

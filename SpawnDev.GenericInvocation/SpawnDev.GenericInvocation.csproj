@@ -4,6 +4,12 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<!-- Turn on the trim + AOT analyzers so this library owns its own reflection warnings.
+		     The public API is honestly labelled with [RequiresUnreferencedCode]/[RequiresDynamicCode];
+		     those attributes make the internal reflection warnings go away here and surface a single
+		     actionable warning at each consumer call site instead of an opaque IL20xx deep inside us. -->
+		<IsTrimmable>true</IsTrimmable>
+		<IsAotCompatible>true</IsAotCompatible>
 		<Version>1.0.0</Version>
 		<PackageReleaseNotes>v1.0.0</PackageReleaseNotes>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

@@ -84,5 +84,47 @@ object? result = await myDelegate.InvokeGenericAsync(typeof(int));
 
 ---
 
+## ✂️ Trimming & Native AOT
+
+This library turns a **runtime `Type` into a compile-time `<T>`** using `MakeGenericMethod` /
+`MakeGenericType` and compiled Expression Trees. That is fundamentally reflection + runtime code
+generation, so a general-purpose invoker **cannot** promise the trimmer or the AOT compiler that an
+arbitrary caller's generic method - and the types passed to it - will survive. The requirement isn't
+even expressible as a single annotation: one caller's `T` might need public constructors, another's
+public methods, another nothing.
+
+So the public API is honestly labelled:
+
+* **`[RequiresUnreferencedCode]`** - a trimmed consumer gets a clear **IL2026** at their own call site.
+* **`[RequiresDynamicCode]`** - an AOT consumer gets a clear **IL3050** at their own call site.
+
+### What this means for you
+
+* **Blazor WebAssembly (default, interpreted):** works today - WASM is trimmed but keeps the IL
+  interpreter, so `MakeGenericMethod` and compiled expressions run fine at runtime. You'll see the
+  IL2026/IL3050 warnings; suppress them at the call site once you've ensured your target method and
+  types are preserved (see below).
+* **Native AOT / fully-AOT WASM (no interpreter):** not supported - the runtime code generation this
+  library depends on is unavailable. The IL3050 warning is telling you the truth.
+
+### Suppressing at the call site (when you know it's safe)
+
+If you control the generic method being closed and know its type parameters carry no
+`DynamicallyAccessedMembers` requirements (e.g. an internal dispatch method), suppress right where you
+call in:
+
+```csharp
+[UnconditionalSuppressMessage("Trimming", "IL2026",
+    Justification = "Closes MyDispatch<T>, whose type parameter declares no DynamicallyAccessedMembers requirement.")]
+[UnconditionalSuppressMessage("AOT", "IL3050",
+    Justification = "Interpreted runtime (e.g. Blazor WASM); not built for Native AOT.")]
+void CallSite() => ((Delegate)MyDispatch<object>).InvokeGeneric(runtimeType);
+```
+
+If the closed method (or a passed type) *does* need members preserved, keep them alive with
+`[DynamicallyAccessedMembers]`, a `[DynamicDependency]`, or a trimmer descriptor instead of suppressing.
+
+---
+
 ## 📄 License
 This project is licensed under the [MIT License](LICENSE).
